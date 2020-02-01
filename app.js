@@ -1,7 +1,11 @@
 const db = require('./DB/DatabaseManager')
 const inquirer = require('inquirer')
 const process = require('process')
-const questions = require('./lib/questions')
+const questions = require('./controllers/questions')
+const AddEmployee = require('./controllers/AddEmployee')
+const RemoveEmployee = require('./controllers/RemoveEmployee')
+const UpdateEmployeeRole = require('./controllers/UpdateEmployeeRole')
+const UpdateEmployeeManager = require('./controllers/UpdateEmployeeManager')
 
 
 function exitApp() {
@@ -33,18 +37,33 @@ async function whatToDo() {
             ]
         }
     ])
-    if (answers.operation == 'View All Employees') {
+    const op = answers.operation
+    if (op == 'View All Employees') {
         let data = await db.getAllEmployees()
         console.table(data);
-        whatToDo();
-    } else if (answers.operation == 'View All Employees by Department') {
+    } else if (op == 'View All Employees by Department') {
         let deptName = await questions.chooseDepartment()
         let emps = await db.getEmployeesByDept(deptName)
         console.table(emps)
-        whatToDo();
+    } else if (op == 'View All Employees by Manager') {
+        let manager = await questions.chooseManager()
+        console.table(await db.getEmployeesByManager(manager))
+    } else if (op == 'Add Employee') {
+        let employee = await AddEmployee.run()
+        console.log(`Added ${employee.first_name} ${employee.last_name} to the database.`)
+    } else if (op == 'Remove Employee') {
+        await RemoveEmployee.run()
+        console.log('Removed Employee')
+    } else if (op == 'Update Employee Role') {
+        await UpdateEmployeeRole.run()
+        console.log('Role updated')
+    } else if (op == 'Update Employee Manager') {
+        await UpdateEmployeeManager.run()
+        console.log('Manager Updated')
     } else if ('Exit') {
         exitApp();
     }
+    whatToDo();
 }
 
 whatToDo();
